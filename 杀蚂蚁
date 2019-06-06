@@ -1,0 +1,295 @@
+#include <algorithm>
+#include <iostream>
+#include <cstring>
+#include <cstdio>
+#include <cmath>
+using namespace std;
+#define N 200005
+
+double eps = 1e-9;
+int dcmp(double x)
+{
+    if (x <= eps && x >= -eps)
+        return 0;
+    return (x > 0) ? 1 : -1;
+}
+struct Vector
+{
+    double x, y;
+    Vector(double X = 0, double Y = 0)
+    {
+        x = X, y = Y;
+    }
+};
+typedef Vector Point;
+Vector operator+(Vector a, Vector b) { return Vector(a.x + b.x, a.y + b.y); }
+Vector operator-(Vector a, Vector b) { return Vector(a.x - b.x, a.y - b.y); }
+bool operator==(Vector a, Vector b) { return a.x == b.x && a.y == b.y; }
+
+double Dot(Vector a, Vector b)
+{
+    return a.x * b.x + a.y * b.y;
+}
+double Cross(Vector a, Vector b)
+{
+    return a.x * b.y - a.y * b.x;
+}
+double Len(Vector a)
+{
+    return sqrt(a.x * a.x + a.y * a.y);
+}
+double DisTS(Point P, Point A, Point B)
+{
+    if (A == B)
+        return Len(P - A);
+    Vector v = B - A, w = P - A, u = P - B;
+    if (dcmp(Dot(v, w)) < 0)
+        return Len(w);
+    else if (dcmp(Dot(v, u)) > 0)
+        return Len(u);
+    else
+        return fabs(Cross(v, w) / Len(v));
+}
+int n, m, guncnt, d, r, t, T;
+struct ANT
+{
+    int x, y, lastx, lasty;
+    int age;
+    int level;
+    int startblood, blood;
+    bool carry;
+} ant[10];
+struct GUN
+{
+    int x, y;
+} gun[25];
+int antcnt, tot, cake;
+int mp[10][10];
+int infor[10][10];
+double mi[N];
+int dx[4] = {-1, 0, 1, 0}, dy[4] = {0, -1, 0, 1};
+bool flag;
+
+void AntBirth()
+{
+    if (antcnt < 6 && !mp[0][0])
+    {
+        ++antcnt;
+        ++tot;
+        ant[antcnt].x = ant[antcnt].y = ant[antcnt].lastx = ant[antcnt].lasty = 0;
+        ant[antcnt].age = 1;
+        ant[antcnt].level = (tot - 1) / 6 + 1;
+        ant[antcnt].startblood = ant[antcnt].blood = floor(4 * mi[ant[antcnt].level]);
+        ant[antcnt].carry = 0;
+        ++mp[0][0];
+    }
+}
+void Information()
+{
+    for (int i = 1; i <= antcnt; ++i)
+    {
+        if (ant[i].carry)
+            infor[ant[i].x][ant[i].y] += 5;
+        else
+            infor[ant[i].x][ant[i].y] += 2;
+    }
+}
+void Move()
+{
+    // 0 上 2 下 1 左 3 右
+    for (int i = 1; i <= antcnt; ++i)
+    {
+
+        int x = ant[i].x, y = ant[i].y;
+        int lastx = ant[i].lastx, lasty = ant[i].lasty;
+        bool can[4];
+        memset(can, 0, sizeof(can));
+
+        int Max = 0, cancnt = 0;
+        for (int j = 0; j < 4; ++j)
+        {
+            int nxtx = x + dx[j], nxty = y + dy[j];
+            if (nxtx >= 0 && nxtx <= n && nxty >= 0 && nxty <= m && mp[nxtx][nxty] == 0 && (nxtx != lastx || nxty != lasty))
+            {
+                can[j] = 1;
+                ++cancnt;
+                Max = max(Max, infor[nxtx][nxty]);
+            }
+        }
+        if (!cancnt)
+        {
+            ant[i].lastx = x;
+            ant[i].lasty = y;
+            continue;
+        }
+        int dir = 0;
+        for (int j = 3; j >= 0; --j)
+        {
+            int nxtx = x + dx[j], nxty = y + dy[j];
+            if (can[j] && infor[nxtx][nxty] == Max)
+            {
+                dir = j;
+                if (ant[i].age % 5 == 0)
+                    break;
+                --mp[x][y];
+                ++mp[nxtx][nxty];
+                ant[i].lastx = x, ant[i].lasty = y;
+                ant[i].x = nxtx, ant[i].y = nxty;
+                break;
+            }
+        }
+
+        if (ant[i].age % 5 == 0)
+        {
+            for (int j = 0; j < 4; ++j)
+            {
+                ++dir;
+                if (dir == 4)
+                    dir = 0;
+                if (can[dir])
+                {
+                    int nxtx = x + dx[dir], nxty = y + dy[dir];
+                    --mp[x][y];
+                    ++mp[nxtx][nxty];
+                    ant[i].lastx = x, ant[i].lasty = y;
+                    ant[i].x = nxtx, ant[i].y = nxty;
+                    break;
+                }
+            }
+        }
+    }
+}
+void CarryCake()
+{
+    if (cake)
+        return;
+    for (int i = 1; i <= antcnt; ++i)
+        if (ant[i].x == n && ant[i].y == m)
+        {
+            ant[i].carry = 1;
+            cake = i;
+            ant[i].blood += ant[i].startblood / 2;
+            ant[i].blood = min(ant[i].blood, ant[i].startblood);
+            break;
+        }
+}
+int qr(int x)
+{
+    return x * x;
+}
+int length(ANT a, GUN b)
+{
+    return qr(a.x - b.x) + qr(a.y - b.y);
+}
+bool canhit(ANT a, GUN b, ANT c)
+{
+    Point A = Point(b.x, b.y);
+    Point B = Point(c.x, c.y);
+    Point P = Point(a.x, a.y);
+    double dis = DisTS(P, A, B);
+    if (dcmp(dis - 0.5) <= 0)
+        return 1;
+    else
+        return 0;
+}
+void Attack()
+{
+    for (int i = 1; i <= guncnt; ++i)
+    {
+        int goal = 0;
+        if (cake && length(ant[cake], gun[i]) <= r * r)
+            goal = cake;
+        else
+        {
+            int Min = 100000;
+            for (int j = 1; j <= antcnt; ++j)
+            {
+                int now = length(ant[j], gun[i]);
+                if (now <= r * r && now < Min)
+                {
+                    Min = now;
+                    goal = j;
+                }
+            }
+        }
+        if (!goal)
+            continue;
+        for (int j = 1; j <= antcnt; ++j)
+            if (canhit(ant[j], gun[i], ant[goal]))
+                ant[j].blood -= d;
+    }
+}
+void CheckDeath()
+{
+    int i = 1;
+    while (i <= antcnt)
+    {
+        if (ant[i].blood < 0)
+        {
+            --mp[ant[i].x][ant[i].y];
+            for (int j = i; j < antcnt; ++j)
+                ant[j] = ant[j + 1];
+            --antcnt;
+        }
+        else
+            ++i;
+    }
+    cake = 0;
+    for (int i = 1; i <= antcnt; ++i)
+        if (ant[i].carry)
+        {
+            cake = i;
+            break;
+        }
+}
+bool CheckGame()
+{
+    if (!cake)
+        return 0;
+    for (int i = 1; i <= antcnt; ++i)
+        if (!ant[i].x && !ant[i].y && ant[i].carry)
+            return 1;
+    return 0;
+}
+int main()
+{
+    scanf("%d%d", &n, &m);
+    scanf("%d%d%d", &guncnt, &d, &r);
+    for (int i = 1; i <= guncnt; ++i)
+    {
+        scanf("%d%d", &gun[i].x, &gun[i].y);
+        mp[gun[i].x][gun[i].y] = -1;
+    }
+    scanf("%d", &t);
+    mi[0] = 1.0;
+    for (int i = 1; i <= t; ++i)
+        mi[i] = mi[i - 1] * 1.1;
+
+    for (T = 1; T <= t; ++T)
+    {
+        AntBirth();
+        Information();
+        Move();
+        CarryCake();
+        Attack();
+        CheckDeath();
+
+        flag = CheckGame();
+        if (flag)
+            break;
+
+        for (int i = 0; i <= n; ++i)
+            for (int j = 0; j <= m; ++j)
+                if (infor[i][j])
+                    --infor[i][j];
+        for (int i = 1; i <= antcnt; ++i)
+            ++ant[i].age;
+    }
+    if (flag)
+        printf("Game over after %d seconds\n", T);
+    else
+        puts("The game is going on");
+    printf("%d\n", antcnt);
+    for (int i = 1; i <= antcnt; ++i)
+        printf("%d %d %d %d %d\n", ant[i].age - 1, ant[i].level, ant[i].blood, ant[i].x, ant[i].y);
+}
