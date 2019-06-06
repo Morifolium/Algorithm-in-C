@@ -1,0 +1,65 @@
+#include <cstdio>
+#include <algorithm>
+using namespace std;
+const int dx[4] = {0, 0, -1, 1}, dy[4] = {1, -1, 0, 0};
+enum way
+{
+	W,
+	E,
+	S,
+	N
+};
+int n, m, big, ans;
+bool a[51][51][4], v[51][51];
+int d;
+bool check(int x, int y, int i)
+{
+	if (x < 1 || x > n || y < 1 || y > m || v[x][y] || a[x][y][i])
+		return false;
+	else
+		return true;
+}
+int bfs(int x, int y)
+{
+	int head = 0, tail = 1, stat[2501][2];
+	v[x][y] = 1, stat[1][0] = x, stat[1][1] = y;
+	do
+	{
+		head++; //出队（队首加一）
+		for (int i = 0; i < 4; i++)
+			if (check(stat[head][0] + dx[i], stat[head][1] + dy[i], i)) //判断
+			{
+				tail++;												 //入队（队尾加一）
+				v[stat[head][0] + dx[i]][stat[head][1] + dy[i]] = 1; //已经访问过了
+				stat[tail][0] = stat[head][0] + dx[i];
+				stat[tail][1] = stat[head][1] + dy[i];
+			}
+	} while (head < tail);
+	return tail; //tail便是房间面积
+}
+int main()
+{
+	scanf("%d%d", &n, &m);
+	for (int i = 1; i <= n; i++)
+		for (int j = 1; j <= m; j++)
+		{
+			scanf("%d", &d);
+			if (d >= 8)
+				a[i][j][S] = 1, d -= 8; //（8：南墙）
+			if (d >= 4)
+				a[i][j][E] = 1, d -= 4; // （4：东墙）
+			if (d >= 2)
+				a[i][j][N] = 1, d -= 2; // （2：北墙）
+			if (d == 1)
+				a[i][j][W] = 1, d -= 1; // （1：西墙）
+		}
+	for (int i = 1; i <= n; i++)
+		for (int j = 1; j <= m; j++)
+			if (!v[i][j])
+			{							   //没有访问过
+				big = max(bfs(i, j), big); //求最大值 max（)需调用algorithm
+				ans++;					   //房间数增加
+			}
+	printf("%d\n%d", ans, big);
+	return 0;
+}
