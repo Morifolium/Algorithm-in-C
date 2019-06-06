@@ -1,0 +1,47 @@
+#include <iostream>
+#include <algorithm>
+using namespace std;
+ 
+const int Max = 2005;
+ 
+int ves[Max][Max], up[Max][Max], Left[Max][Max], Right[Max][Max];
+int temp1 = 1, temp2 = 1;
+ 
+int main(void)
+{
+	ios::sync_with_stdio(false);
+	int N, M;
+	cin >> N >> M;
+	for(int i = 1; i <= N; i++)
+		for (int j = 1; j <= M; j++) {
+			cin >> ves[i][j];
+			Left[i][j] = Right[i][j] = j;	//初始化Right和Left，使他们值为点所在纵坐标
+			up[i][j] = 1;	//初始化up使其值为1
+		}
+ 
+	for (int i = 1; i <= N; i++)
+		for (int j = 2; j <= M; j++)
+			if (ves[i][j] == 1 - ves[i][j - 1])	//判断相邻两个数是否不同
+				Left[i][j] = Left[i][j - 1];	//是，则
+ 
+	for (int i = 1; i <= N; i++)
+		for (int j = M - 1; j > 0; j--)
+			if (ves[i][j] == 1 - ves[i][j + 1])
+				Right[i][j] = Right[i][j + 1];
+ 
+	for(int i = 1;i <= N; i++)
+		for (int j = 1; j <= M; j++) {
+			if (i > 1 && ves[i][j] == 1 - ves[i - 1][j]) {	//递推公式
+				Left[i][j] = max(Left[i][j], Left[i - 1][j]);
+				Right[i][j] = min(Right[i][j], Right[i - 1][j]);
+				up[i][j] = up[i - 1][j] + 1;
+			}
+ 
+			int A_instance = Right[i][j] - Left[i][j] + 1;	//计算长度
+			int B_instance = min(A_instance, up[i][j]);	//算出长宽中较小的边，以计算正方形
+			temp1 = max(temp1, B_instance * B_instance);	//正方形面积
+			temp2 = max(temp2, A_instance * up[i][j]);		//长方形面积
+		}
+ 
+	cout << temp1 << endl << temp2 << endl;
+}
