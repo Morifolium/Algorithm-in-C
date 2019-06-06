@@ -1,0 +1,36 @@
+#include <iostream>
+#include <stdio.h>
+#include <math.h>
+
+int num = 0, row[15], len;
+int main()
+{
+	int queen(int x);
+	scanf("%d", &len);
+	queen(0);
+	printf("%d", num);
+}
+int queen(int x)
+{
+	if (x == len)
+	{
+		num++;
+		return 0;
+	}
+	int i, j;
+	for (j = 0; j < len; j++)
+	{
+		for (i = 0; i < x; i++)
+		{
+			if (row[i] == j || (i - x) == (row[i] - j) || (x - i) == (row[i] - j))
+			{
+				break;
+			}
+		}
+		if (i == x )
+		{
+			row[x] = j;
+			queen(x + 1);
+		}
+	}
+}
