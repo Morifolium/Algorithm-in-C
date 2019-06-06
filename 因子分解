@@ -1,0 +1,25 @@
+#include <math.h>
+#include <stdio.h>
+using namespace std;
+
+
+int x, ans;
+void dfs(int p, int k) { //p表示乘积，k表示当前的因子
+	if (p == x) {
+		ans++;
+		return;
+	}
+	for (int i = k; i <= x; i++) {
+		if (p * i > x)break;
+		if (x % i == 0)dfs(p * i, i);
+	}
+}
+int main() {
+	{
+		ans = 0;
+		scanf("%d", &x);
+		dfs(1, 2);
+		printf("%d\n", ans);
+	}
+	return 0;
+}
