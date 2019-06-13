@@ -1,0 +1,85 @@
+#include <iostream>
+#include <stack>
+using namespace std;
+
+const int MAXBUFFER = 10;
+
+int main()
+{
+	stack<double> s;
+	char c;
+	double d, e;
+	char str[MAXBUFFER];
+	int i = 0;
+
+	cout << "请按逆波兰表达式输入待计算数据，数据与运算符之间用空格隔开，以#作为结束标志：" << endl;
+	c = getchar();
+	while (c != '#')
+	{
+		while (isdigit(c) || c == '.')
+		{
+			str[i++] = c;
+			str[i] = '\0';
+			if (i >= 10)
+			{
+				cout << "错误：数字太大了!" << endl;
+				return -1;
+			}
+
+			c = getchar();
+			if (c == ' ')
+			{
+				d = atof(str); // 把字符串转换成浮点数
+				s.push(d);
+				i = 0;
+				break;
+			}
+		}
+
+		switch (c)
+		{
+		case '+':
+			e = s.top();
+			s.pop();
+			d = s.top();
+			s.pop();
+			s.push(d + e);
+			break;
+		case '-':
+			e = s.top();
+			s.pop();
+			d = s.top();
+			s.pop();
+			s.push(d - e);
+			break;
+		case '*':
+			e = s.top();
+			s.pop();
+			d = s.top();
+			s.pop();
+			s.push(d * e);
+			break;
+		case '/':
+			e = s.top();
+			s.pop();
+			d = s.top();
+			s.pop();
+			if (e != 0)
+			{
+				s.push(d / e);
+			}
+			else
+			{
+				cout << "错误：除数为零" << endl;
+				return -1;
+			}
+			break;
+		}
+
+		c = getchar();
+	}
+
+	cout << "运算结果为: " << s.top() << endl;
+	s.pop();
+	return 0;
+}
