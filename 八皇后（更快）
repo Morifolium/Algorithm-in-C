@@ -1,0 +1,38 @@
+#include<cstdio>
+using namespace std;
+int n, ans[50], sum;
+bool flag[4][50];
+
+void dfs(int i)
+{
+    int j;
+    if(i>n)
+    {
+        ++sum;
+        if(sum>3) return ;
+        for(int i=1;i<=n;++i)    printf("%d ",ans[i]);
+        printf("\n");
+        return ;
+    }
+
+    for(j=1;j<=n;++j)
+        if( !flag[1][j] && (!flag[2][i+j]) && (!flag[3][i-j+n]) )
+    {
+        ans[i] = j;
+        flag[1][j] = 1;
+        flag[2][i+j] = 1;
+        flag[3][i-j+n] = 1;
+        dfs(i+1);
+        flag[1][j] = 0;
+        flag[2][i+j] = 0;
+        flag[3][i-j+n] = 0;
+    }
+}
+
+int main()
+{
+    scanf("%d",&n);
+    dfs(1);
+    printf("%d",sum);
+    return 0;
+}
