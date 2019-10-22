@@ -1,0 +1,59 @@
+/**
+ * 通过题意分析，可知bad substring的模式是：连续相同字符的子串，在头尾任意一边接上另一个子串
+ * 例如：
+ * ABBB...BBB
+ * BAAA...AAA
+ * AAA...AAAB
+ * BBB...BBBA
+ * 其他的字符串形式都满足good substring
+ * 因此，问题可转化为：总的子串数 - bad子串数
+ *
+ * 设：
+ * n：字符串总长度
+ * l：左边连续的字符串数
+ * r：右边连续的字符串数
+ * c：字符串中出现的不连续次数，即：AB和BA的次数
+ * bad：bad子串数
+ * good：good子串数
+ * total：总的子串数
+ *
+ * 观察某个AB或BA对，以此为中心，分别向左边和右边延展可分别得若干bad子串，两边相加再减1（中心重复），可得该中心的所有bad子串数
+ * 把所有AB、BA按上述方式计算之后再求和，可得所有bad子串数，合并简化后可得：
+ * bad = n * 2 - (l + r) - c
+ *
+ * 而：
+ * total = n * (n - 1) / 2
+ *
+ * 所以：
+ * good = total - bad
+ *
+ */
+#include<bits/stdc++.h>
+using namespace std;
+ 
+const int maxn=3e5+50;
+typedef long long ll;
+char s[maxn];
+int main()
+{
+    ll n;
+    scanf("%lld",&n);
+    scanf("%s",s+1);
+    ll ans=0;
+    int pre=1;
+    for (int i=2;i<=n;i++)
+    {
+        if (s[i]==s[i-1]) continue;
+        ans--;
+        ans+=i-pre;
+        pre=i;
+    }
+    pre=n;
+    for (int i=n-1;i>=1;i--)
+    {
+        if (s[i]==s[i+1]) continue;
+        ans+=pre-i;
+        pre=i;
+    }
+    cout<<n*(n-1)/2-ans<<endl;
+}
